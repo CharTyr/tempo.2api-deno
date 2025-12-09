@@ -19,7 +19,8 @@ const CONFIG = {
 
 if (!CONFIG.clientToken || !CONFIG.canvasId) {
   console.error("❌ 请设置环境变量 TEMPO_CLIENT_TOKEN 和 TEMPO_CANVAS_ID");
-  Deno.exit(1);
+  // Deno Deploy 不允许 Deno.exit()，改用抛出错误
+  throw new Error("Missing required environment variables: TEMPO_CLIENT_TOKEN and TEMPO_CANVAS_ID");
 }
 
 // ============== 导入 ==============
