@@ -7,20 +7,31 @@
 
 // ============== 配置 ==============
 
+// 使用 getter 延迟读取环境变量，兼容 Deno Deploy
 const CONFIG = {
-  clientToken: Deno.env.get("TEMPO_CLIENT_TOKEN") || "",
-  canvasId: Deno.env.get("TEMPO_CANVAS_ID") || "",
-  port: parseInt(Deno.env.get("PORT") || "3000"),
+  get clientToken() {
+    return Deno.env.get("TEMPO_CLIENT_TOKEN") || "";
+  },
+  get canvasId() {
+    return Deno.env.get("TEMPO_CANVAS_ID") || "";
+  },
+  get port() {
+    return parseInt(Deno.env.get("PORT") || "3000");
+  },
   // Retry configuration
-  maxRetries: parseInt(Deno.env.get("MAX_RETRIES") || "3"),
+  get maxRetries() {
+    return parseInt(Deno.env.get("MAX_RETRIES") || "3");
+  },
   retryBaseDelay: 1000,  // 1 second
   retryMaxDelay: 10000,  // 10 seconds
 };
 
-if (!CONFIG.clientToken || !CONFIG.canvasId) {
-  console.error("❌ 请设置环境变量 TEMPO_CLIENT_TOKEN 和 TEMPO_CANVAS_ID");
-  // Deno Deploy 不允许 Deno.exit()，改用抛出错误
-  throw new Error("Missing required environment variables: TEMPO_CLIENT_TOKEN and TEMPO_CANVAS_ID");
+// 验证函数，在运行时调用
+function validateConfig() {
+  if (!CONFIG.clientToken || !CONFIG.canvasId) {
+    console.error("❌ 请设置环境变量 TEMPO_CLIENT_TOKEN 和 TEMPO_CANVAS_ID");
+    throw new Error("Missing required environment variables: TEMPO_CLIENT_TOKEN and TEMPO_CANVAS_ID");
+  }
 }
 
 // ============== 导入 ==============
@@ -1108,5 +1119,8 @@ console.log(`
 ║    GET  /stats                                ║
 ╚═══════════════════════════════════════════════╝
 `);
+
+// 在启动时验证配置
+validateConfig();
 
 Deno.serve({ port: CONFIG.port }, handler);
